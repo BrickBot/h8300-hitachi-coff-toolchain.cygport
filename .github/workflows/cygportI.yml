@@ -14,7 +14,8 @@ on:
 env:
   REPO_DIR:     BrickBot
   PROJECT_NAME: h8300-hitachi-coff-toolchain
-  CYGPORT_FILE: ${{ env.REPO_DIR }}/${{ env.PROJECT_NAME }}.cygport
+  # The name of the Cyport file is the same as github.repository
+  CYGPORT_FILE: ${{ github.repository }}
   PACKAGE_PATH: "h8300*-coff-toolchain-*.*.*-*.*/dist/${{ env.PROJECT_NAME }}/h8300*-coff-toolchain-*.*.*-*.*.tar.xz"
   
   # Prevent the Cygwin profile script from doing an automatic `cd ${HOME}`
@@ -28,7 +29,7 @@ defaults:
 
 jobs:
   build_toolchain_job:
-    name:     ${{ matrix.toolchain-set }} targeting ${{ matrix.target-system }} on ${{ matrix.os }}-${{ matrix.platform }}
+    name:     Cygport Package Generation for ${{ matrix.platform }}
     strategy:
       fail-fast:  false
       matrix:     
@@ -79,12 +80,11 @@ jobs:
     - name: Package the build
       run:  cygport $CYGPORT_FILE package
 
-
     - name: List the contents of the generated Cygwin package
-      run:  tar --list --file=h8300*-coff-toolchain-*.*.*-*.*/dist/$PROJECT_NAME/h8300*-coff-toolchain-*.*.*-*.*.tar.xz
+      run:  tar --list --file="$PACKAGE_PATH"
 
     - name: Archive the host installation snapshot tar file
       uses: actions/upload-artifact@v4
       with:
-        name: "[${{ matrix.os }}-${{ matrix.platform }}]_${{ matrix.target-system }}-${{ matrix.toolchain-set }}_${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}"
-        path: "${{ env.OUTPUT_DIR }}/[${{ matrix.os }}-${{ matrix.platform }}]_${{ matrix.target-system }}-${{ matrix.toolchain-set }}.tar"
+        name: "${{ env.PROJECT_NAME }}-${{ matrix.platform }}_${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}"
+        path: "$PACKAGE_PATH"
