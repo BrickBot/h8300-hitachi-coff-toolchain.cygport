@@ -21,7 +21,7 @@ include the following: Assembly, C, C++, Fortran77, Java (GCJ),
 Objective-C, Pascal (GPC), and TreeLang.  This toolchain can
 also be used with the LEGO MindStorms RCX, as it was built
 around an H8/300 processor."
-HOMEPAGE="https://github.com/BrickBot/{$PROJECT}"
+HOMEPAGE="https://github.com/BrickBot/${PROJECT}"
 
 # License ID list at https://spdx.org/licenses/
 LICENSE="GPL-3.0-only"
