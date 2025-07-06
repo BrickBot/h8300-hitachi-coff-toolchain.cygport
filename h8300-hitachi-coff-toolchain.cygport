@@ -1,0 +1,57 @@
+# Package Identification
+NAME="h8300-hitachi-coff-toolchain"
+PROJECT="GNU-Legacy-Toolchain"
+VERSION_MAJOR=1
+VERSION_MINOR=1
+VERSION_PATCH=0
+VERSION="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
+RELEASE=1
+
+# Package Metadata
+CATEGORY="Devel"
+SUMMARY="A GNU cross-toolchain supporting COFF for the Hitachi H8/300"
+DESCRIPTION="Includes the following toolchain components for
+h8300-hitachi-coff, but because GNU tools no longer support
+'generic COFF' targets, the included tool versions are older.
+Included tool components and versions include the following:
+GNU Binary Utilities (BinUtils-2.16.1), GNU Compiler Collection
+(GCC-3.4.6), GNU Pascal Compiler (GPC-2.1-20070904), NewLib (1.19.0),
+and GNU Debugger (GDB-5.8).  Supported programming languages
+include the following: Assembly, C, C++, Fortran77, Java (GCJ),
+Objective-C, Pascal (GPC), and TreeLang.  This toolchain can
+also be used with the LEGO MindStorms RCX, as it was built
+around an H8/300 processor."
+HOMEPAGE="https://github.com/BrickBot/{$PROJECT}"
+
+# License ID list at https://spdx.org/licenses/
+LICENSE="GPL-3.0-only"
+
+# File Locations
+SRC_URI="${HOMEPAGE}/archive/refs/tags/v${VERSION}.tar.gz"
+SRC_DIR="${PROJECT}-${VERSION}"
+
+
+# Build Setup
+BUILD_REQUIRES="autoconf automake m4 make binutils
+gcc-core gcc-g++ gcc-objc bison flex libtool gawk
+gettext gettext-devel gettext-debuginfo texinfo
+file libisl-devel libncurses-devel dejagnu"
+
+src_compile() {
+  # Fix source timestamps
+  # If there are random, unexpected build errors, this might need to be enabled
+  #"${S}/fix-mtime"
+  
+  # Change working directory to outside the source tree
+  echo "Preparing to compile source for ${NAME}-${VERSION}"
+  cd "${B}"
+  
+  # Run configure with the arguments preset in our script
+  "${S}/sym-combined/rcx-lego-configure" --prefix=/usr ${CYGCONF_ARGS}
+  
+  # Execute the build, noting that parallel builds are unsupported
+  MAKEOPTS="${MAKEOPTS} -j1"
+  cygmake
+}
+
+# src_install() undefined here, as the default can be used

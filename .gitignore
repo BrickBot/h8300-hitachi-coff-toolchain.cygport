@@ -1,0 +1,6 @@
+# Exclude Cygport's package-specific, auto-generated working folder
+h8300*-coff-toolchain-*.*.*-*.*/
+
+# Archive files
+*.tar.gz
+*.tgz

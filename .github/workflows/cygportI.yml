@@ -1,0 +1,90 @@
+name: Cygport Packager for h8300-hitachi-coff-toolchain
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Following POSIX cron syntax, run every Monday morning at 5:30 AM UTC
+    #   https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html#tag_20_25_07
+    - cron:   '30 5 * * 1'
+  push:
+    # branches: [ master ]
+  pull_request:
+    # branches: [ master ]
+
+env:
+  REPO_DIR:     BrickBot
+  PROJECT_NAME: h8300-hitachi-coff-toolchain
+  CYGPORT_FILE: ${{ env.REPO_DIR }}/${{ env.PROJECT_NAME }}.cygport
+  PACKAGE_PATH: "h8300*-coff-toolchain-*.*.*-*.*/dist/${{ env.PROJECT_NAME }}/h8300*-coff-toolchain-*.*.*-*.*.tar.xz"
+  
+  # Prevent the Cygwin profile script from doing an automatic `cd ${HOME}`
+  CHERE_INVOKING: 1
+  CYGWIN:         winsymlinks:native
+  CYGWIN_DEPENDS: cygport
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build_toolchain_job:
+    name:     ${{ matrix.toolchain-set }} targeting ${{ matrix.target-system }} on ${{ matrix.os }}-${{ matrix.platform }}
+    strategy:
+      fail-fast:  false
+      matrix:     
+        os:       [ "windows-latest" ]
+        platform: [ "x86_64", "x86" ]
+    runs-on:      ${{ matrix.os }}
+    
+    steps:
+    - name: Get latest from version control
+      uses: actions/checkout@v4
+      with:
+        path: ${{ env.REPO_DIR }}
+        # git-restore-mtime-bare uses the ref log to find the correct timestamp
+        # for each file. This requires a full git history. The default value (1)
+        # creates a shallow checkout.
+        fetch-depth: 0
+
+      # Fix timestamps (needed to prevent some files from attempting to regenerate and failing during build).
+      # While a GitHub Action is available, as a reference for those who might be replicating this build locally,
+      #   we will install its Debian package and use the script included in this repository
+      #   that runs this Git command directly.
+      # NOTE: The "fix-mtime" script takes a really long time under Cygwin,
+      #   so we will bypass that part of the build and execute this action instead.
+    - name: Restore source timestamps
+      uses: chetan/git-restore-mtime-action@v2
+
+      # Cygwin action docs – https://github.com/marketplace/actions/install-cygwin-action
+    - name: Setup Cygwin Environment
+      if:   runner.os == 'Windows'
+      uses: cygwin/cygwin-install-action@v5
+      with:
+        platform: ${{ matrix.platform }}
+        packages: ${{ env.CYGWIN_DEPENDS }}
+
+      # Run the Cygport steps
+    - name: Download the source archive
+      run:  cygport $CYGPORT_FILE download
+
+    - name: Prepare the source code
+      run:  cygport $CYGPORT_FILE prep
+
+    - name: Compile the source code
+      run:  cygport $CYGPORT_FILE compile
+
+    - name: Install the built code to a DestDir
+      run:  cygport $CYGPORT_FILE install
+
+    - name: Package the build
+      run:  cygport $CYGPORT_FILE package
+
+
+    - name: List the contents of the generated Cygwin package
+      run:  tar --list --file=h8300*-coff-toolchain-*.*.*-*.*/dist/$PROJECT_NAME/h8300*-coff-toolchain-*.*.*-*.*.tar.xz
+
+    - name: Archive the host installation snapshot tar file
+      uses: actions/upload-artifact@v4
+      with:
+        name: "[${{ matrix.os }}-${{ matrix.platform }}]_${{ matrix.target-system }}-${{ matrix.toolchain-set }}_${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}"
+        path: "${{ env.OUTPUT_DIR }}/[${{ matrix.os }}-${{ matrix.platform }}]_${{ matrix.target-system }}-${{ matrix.toolchain-set }}.tar"
