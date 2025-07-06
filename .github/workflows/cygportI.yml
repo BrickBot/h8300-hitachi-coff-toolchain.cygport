@@ -47,18 +47,8 @@ jobs:
         # creates a shallow checkout.
         fetch-depth: 0
 
-      # Fix timestamps (needed to prevent some files from attempting to regenerate and failing during build).
-      # While a GitHub Action is available, as a reference for those who might be replicating this build locally,
-      #   we will install its Debian package and use the script included in this repository
-      #   that runs this Git command directly.
-      # NOTE: The "fix-mtime" script takes a really long time under Cygwin,
-      #   so we will bypass that part of the build and execute this action instead.
-    - name: Restore source timestamps
-      uses: chetan/git-restore-mtime-action@v2
-
       # Cygwin action docs – https://github.com/marketplace/actions/install-cygwin-action
     - name: Setup Cygwin Environment
-      if:   runner.os == 'Windows'
       uses: cygwin/cygwin-install-action@v5
       with:
         platform: ${{ matrix.platform }}
