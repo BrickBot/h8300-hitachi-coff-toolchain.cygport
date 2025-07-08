@@ -36,6 +36,7 @@ BUILD_REQUIRES="autoconf automake m4 make binutils
 gcc-core gcc-g++ gcc-objc bison flex libtool gawk
 gettext gettext-devel gettext-debuginfo texinfo
 file libisl-devel libncurses-devel dejagnu"
+DIFF_EXCLUDES="**/*"
 
 src_compile() {
   # Fix source timestamps
