@@ -91,3 +91,6 @@ jobs:
       with:
         name: "${{ env.PROJECT_NAME }}-${{ matrix.platform }}_${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}"
         path: "$PACKAGE_PATH"
+        if-no-files-found: error
+        # The artifacts are already compressed, so further compression is superfluous
+        compression-level: 0
