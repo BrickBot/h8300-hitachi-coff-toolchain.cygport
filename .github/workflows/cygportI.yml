@@ -80,6 +80,9 @@ jobs:
     - name: Package the build
       run:  cygport $CYGPORT_FILE package
 
+    - name: List the Cygport "dist" directory contents
+      run:  tree --dirsfirst "$(realpath -s "$PROJECT_NAME")*/dist"
+
 #    - name: List the contents of the generated Cygwin package
 #      run:  tar --list --file="$(realpath -s --relative-to=. $PACKAGE_PATH)"
 
