@@ -16,7 +16,7 @@ env:
   PROJECT_NAME: h8300-hitachi-coff-toolchain
   # The name of the Cyport file is the same as github.repository
   CYGPORT_FILE: ${{ github.repository }}
-  PACKAGE_PATH: "h8300*-coff-toolchain-*.*.*-*.*/dist/h8300-hitachi-coff-toolchain/h8300*-coff-toolchain-*.*.*-*.*.tar.xz"
+  PACKAGE_PATH: "h8300*-coff-toolchain-*.*.*-*.*/dist/h8300-hitachi-coff-toolchain/h8300*-coff-toolchain-*.*.*-*-*.tar.xz"
   
   # Prevent the Cygwin profile script from doing an automatic `cd ${HOME}`
   CHERE_INVOKING: 1
@@ -80,8 +80,8 @@ jobs:
     - name: Package the build
       run:  cygport $CYGPORT_FILE package
 
-    - name: List the contents of the generated Cygwin package
-      run:  tar --list --file="$PACKAGE_PATH"
+#    - name: List the contents of the generated Cygwin package
+#      run:  tar --list --file="$(realpath -s --relative-to=. $PACKAGE_PATH)"
 
     - name: Archive the host installation snapshot tar file
       uses: actions/upload-artifact@v4
