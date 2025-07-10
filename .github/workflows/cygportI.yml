@@ -31,7 +31,7 @@ env:
   # ** NOTE **: On Cygwin, need to create a symlink for libtermcap.a -> libncurses.a
   #  - https://superuser.com/a/1020342
   CYGWIN_DEPENDS: cygport
-  CYGWIN_PACKAGING_DEPENDS: cygport tree  git autoconf automake m4 make binutils gcc-core gcc-g++ gcc-objc bison flex libtool gawk gettext gettext-devel gettext-debuginfo texinfo  file libisl-devel libncurses-devel dejagnu  stow
+  CYGWIN_PACKAGING_DEPENDS: cygport tree  git autoconf automake m4 make binutils gcc-core gcc-g++ gcc-objc bison flex libtool gawk gettext gettext-devel gettext-debuginfo texinfo  file libisl-devel libncurses-devel dejagnu  stow  ruby
   CYGWIN_GCC44_BUILD_DEPENDS: libglib2.0-devel libgmp-devel libmpfr-devel libmpc-devel zip unzip
   # Cygwin lacks packages for Mono, so the "gcc44" toolchain set is unsupported unless Mono is built and installed manually
   CYGWIN_GCC44_MISSING_DEPENDS:    mono-runtime libmono-2.0-dev
@@ -42,7 +42,7 @@ defaults:
 
 jobs:
   build_toolchain_job:
-    name:     Cygport Package Generation for ${{ matrix.platform }}
+    name:     Cygport ${{ matrix.platform }} Package Generation
     strategy:
       fail-fast:  false
       matrix:     
@@ -60,12 +60,20 @@ jobs:
         # creates a shallow checkout.
         fetch-depth: 0
 
+      # Check if a version of Ruby is in the PATH
+    - name: Pre-Cygwin Ruby existence and version check
+      run:  which ruby  &&  ruby --version
+
       # Cygwin action docs – https://github.com/marketplace/actions/install-cygwin-action
     - name: Setup Cygwin Environment
       uses: cygwin/cygwin-install-action@v5
       with:
         platform: ${{ matrix.platform }}
         packages: ${{ env.CYGWIN_PACKAGING_DEPENDS }}
+
+      # Check if a version of Ruby is in the PATH
+    - name: Post-Cygwin Ruby existence and version check
+      run:  which ruby  &&  ruby --version
 
       # Run the Cygport steps
     - name: Download the source archive
