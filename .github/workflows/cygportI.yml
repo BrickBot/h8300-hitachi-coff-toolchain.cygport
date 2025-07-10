@@ -19,8 +19,11 @@ env:
   PACKAGE_PATH: "h8300*-coff-toolchain-*.*.*-*.*/dist/h8300-hitachi-coff-toolchain/h8300*-coff-toolchain-*.*.*-*-*.tar.xz"
   
   # Prevent the Cygwin profile script from doing an automatic `cd ${HOME}`
-  CHERE_INVOKING: 1
-  CYGWIN:         winsymlinks:native
+  CHERE_INVOKING:   1
+  # Ensure PATH contains only Cygwin executables
+  CYGWIN_NOWINPATH: 1
+  # Use native symlinks that Command and PowerShell can understand
+  CYGWIN:           winsymlinks:native
 
   # Cygwin package search:  https://cygwin.com/packages/
   # Cygwin package list:    https://cygwin.com/packages/package_list.html
