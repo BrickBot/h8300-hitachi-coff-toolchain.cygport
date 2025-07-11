@@ -36,7 +36,11 @@ BUILD_REQUIRES="autoconf automake m4 make binutils
 gcc-core gcc-g++ gcc-objc bison flex libtool gawk
 gettext gettext-devel gettext-debuginfo texinfo
 file libisl-devel libncurses-devel dejagnu"
-DIFF_EXCLUDES="**/*"
+
+# Ignore any changes under the source directory made during compilation
+# https://github.com/cygwin/cygport/blob/d4b0f1baf2b999825645aec7e79cb166045a8b26/lib/pkg_pkg.cygpart#L512C13-L512C36
+_CYGPORT_RESTRICT_diff_=1
+DIFF_EXCLUDES="'*'"
 
 src_compile() {
   # Fix source timestamps
