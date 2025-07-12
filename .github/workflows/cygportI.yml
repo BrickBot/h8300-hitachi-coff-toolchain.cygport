@@ -12,10 +12,8 @@ on:
     # branches: [ master ]
 
 env:
-  REPO_DIR:     BrickBot
-  PROJECT_NAME: h8300-hitachi-coff-toolchain
   # The name of the Cyport file is the same as github.repository
-  CYGPORT_FILE: ${{ github.repository }}
+  CYGPORT_FILE: h8300-hitachi-coff-toolchain.cygport
   PACKAGE_PATH: "h8300*-coff-toolchain-*.*.*-*.*/dist/h8300-hitachi-coff-toolchain/h8300*-coff-toolchain-*.*.*-*-*.tar.xz"
   
   # Prevent the Cygwin profile script from doing an automatic `cd ${HOME}`
@@ -54,7 +52,6 @@ jobs:
     - name: Get latest from version control
       uses: actions/checkout@v4
       with:
-        path: ${{ env.REPO_DIR }}
         # git-restore-mtime-bare uses the ref log to find the correct timestamp
         # for each file. This requires a full git history. The default value (1)
         # creates a shallow checkout.
@@ -91,16 +88,10 @@ jobs:
     - name: Package the build
       run:  cygport $CYGPORT_FILE package
 
-    - name: List the Cygport "dist" directory contents
-      run:  tree --dirsfirst --matchdirs -d -L 3
-
-#    - name: List the contents of the generated Cygwin package
-#      run:  tar --list --file="$(realpath -s --relative-to=. $PACKAGE_PATH)"
-
     - name: Archive the host installation snapshot tar file
       uses: actions/upload-artifact@v4
       with:
-        name: "${{ env.PROJECT_NAME }}-${{ matrix.platform }}_${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}"
+        name: "${{ env.CYGPORT_FILE }}-${{ matrix.platform }}_${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}"
         path: "$PACKAGE_PATH"
         if-no-files-found: error
         # The artifacts are already compressed, so further compression is superfluous
