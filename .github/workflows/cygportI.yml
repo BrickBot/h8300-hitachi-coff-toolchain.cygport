@@ -100,10 +100,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: "${{ env.CYGPORT_FILE }}-${{ matrix.platform }}_${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}"
-        path: |
-          "${{ env.PACKAGE_PATH }}/${{ env.PACKAGE_FILE_DEFAULT }}"
-          "${{ env.PACKAGE_PATH }}/${{ env.PACKAGE_FILE_ARCH }}"
-          !**/*-src.tar.xz
+        path: [ "${{ env.PACKAGE_PATH }}/${{ env.PACKAGE_FILE_DEFAULT }}", "${{ env.PACKAGE_PATH }}/${{ env.PACKAGE_FILE_ARCH }}", "!**/*-src.tar.xz" ]
         if-no-files-found: error
         # The artifacts are already compressed, so further compression is superfluous
         compression-level: 0
