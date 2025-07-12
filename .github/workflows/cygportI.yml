@@ -14,7 +14,8 @@ on:
 env:
   # The name of the Cyport file is the same as github.repository
   CYGPORT_FILE: h8300-hitachi-coff-toolchain.cygport
-  PACKAGE_PATH: "h8300*-coff-toolchain-*.*.*-*.*/dist/h8300-hitachi-coff-toolchain/h8300*-coff-toolchain-*.*.*-*-*.tar.xz"
+  PACKAGE_PATH: "h8300*-coff-toolchain-*.*.*-*.*/dist/h8300-hitachi-coff-toolchain"
+  PACKAGE_FILE: "h8300*-coff-toolchain-*.*.*-*-*.tar.xz"
   
   # Prevent the Cygwin profile script from doing an automatic `cd ${HOME}`
   CHERE_INVOKING:   1
@@ -76,9 +77,6 @@ jobs:
     - name: Download the source archive
       run:  cygport $CYGPORT_FILE download
 
-    - name: List directories
-      run:  tree --dirsfirst "$PWD"
-
     - name: Prepare the source code
       run:  cygport $CYGPORT_FILE prep
 
@@ -91,14 +89,19 @@ jobs:
     - name: Package the build
       run:  cygport $CYGPORT_FILE package
 
-    - name: List directories
-      run:  tree --dirsfirst -d -L 3
+    - name: Resolve the literal value of the package path
+      run:  echo "PACKAGE_PATH=$(realpath --relative-to=. --logical --no-symlinks $PACKAGE_PATH)" >> "$GITHUB_ENV"
+
+    - name: List “dist” directory contents
+      run:  tree --dirsfirst "$PACKAGE_PATH"
 
     - name: Archive the host installation snapshot tar file
       uses: actions/upload-artifact@v4
       with:
         name: "${{ env.CYGPORT_FILE }}-${{ matrix.platform }}_${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}"
-        path: "${{ env.PACKAGE_PATH }}"
+        path: |
+          "${{ env.PACKAGE_PATH }}/${{ env.PACKAGE_FILE }}"
+          !**/*-src.tar.xz
         if-no-files-found: error
         # The artifacts are already compressed, so further compression is superfluous
         compression-level: 0
