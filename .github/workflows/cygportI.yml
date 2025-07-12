@@ -76,6 +76,9 @@ jobs:
     - name: Download the source archive
       run:  cygport $CYGPORT_FILE download
 
+    - name: List directories
+      run:  tree --dirsfirst --matchdirs -d -L 3
+
     - name: Prepare the source code
       run:  cygport $CYGPORT_FILE prep
 
@@ -87,6 +90,9 @@ jobs:
 
     - name: Package the build
       run:  cygport $CYGPORT_FILE package
+
+    - name: List directories
+      run:  tree --dirsfirst --matchdirs -d -L 3
 
     - name: Archive the host installation snapshot tar file
       uses: actions/upload-artifact@v4
