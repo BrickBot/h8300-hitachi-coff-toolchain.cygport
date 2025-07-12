@@ -77,7 +77,7 @@ jobs:
       run:  cygport $CYGPORT_FILE download
 
     - name: List directories
-      run:  tree --dirsfirst
+      run:  tree --dirsfirst "$PWD"
 
     - name: Prepare the source code
       run:  cygport $CYGPORT_FILE prep
@@ -98,7 +98,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: "${{ env.CYGPORT_FILE }}-${{ matrix.platform }}_${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}"
-        path: "$PACKAGE_PATH"
+        path: "${{ env.PACKAGE_PATH }}"
         if-no-files-found: error
         # The artifacts are already compressed, so further compression is superfluous
         compression-level: 0
