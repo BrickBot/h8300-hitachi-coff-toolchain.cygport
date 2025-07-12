@@ -18,8 +18,8 @@ env:
   # The name of the Cyport file is the same as github.repository
   CYGPORT_FILE: h8300-hitachi-coff-toolchain.cygport
   PACKAGE_PATH: h8300*-hitachi-coff-toolchain-*.*.*-*.*/dist/h8300-hitachi-coff-toolchain
-  PACKAGE_FILE_DEFAULT: h8300*-hitachi-coff-toolchain-*.*.*-[0-9]+.tar.xz
-  PACKAGE_FILE_ARCH:    h8300*-hitachi-coff-toolchain-*.*.*-[0-9]+-*.tar.xz
+  PACKAGE_FILE_DEFAULT: h8300*-hitachi-coff-toolchain-*.*.*-*[[:digit:]].tar.xz
+  PACKAGE_FILE_ARCH:    h8300*-hitachi-coff-toolchain-*.*.*-*[[:digit:]]-*.tar.xz
   
   # Prevent the Cygwin profile script from doing an automatic `cd ${HOME}`
   CHERE_INVOKING:   1
@@ -98,7 +98,7 @@ jobs:
 
       # Packages for the "x86" platform have a different filename pattern
     - name: Resolve the literal value of the package filename
-      run:  echo "PACKAGE_FILE=$(if [ '${{ matrix.platform }}' == 'x86' ] ; then echo $PACKAGE_FILE_DEFAULT; else echo h8300*-hitachi-coff-toolchain-*.*.*-*-${{ matrix.platform }}.tar.xz; fi)" >> "$GITHUB_ENV"
+      run:  echo "PACKAGE_FILE=$(if [ '${{ matrix.platform }}' == 'x86' ] ; then echo $PACKAGE_FILE_DEFAULT; else echo h8300*-hitachi-coff-toolchain-*.*.*-*[[:digit:]]-${{ matrix.platform }}.tar.xz; fi)" >> "$GITHUB_ENV"
 
       # Packages for the "x86" platform have a different filename pattern
     - name: Resolve the literal value of the package file path
