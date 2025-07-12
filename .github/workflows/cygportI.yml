@@ -14,8 +14,9 @@ on:
 env:
   # The name of the Cyport file is the same as github.repository
   CYGPORT_FILE: h8300-hitachi-coff-toolchain.cygport
-  PACKAGE_PATH: "h8300*-coff-toolchain-*.*.*-*.*/dist/h8300-hitachi-coff-toolchain"
-  PACKAGE_FILE: "h8300*-coff-toolchain-*.*.*-*-*.tar.xz"
+  PACKAGE_PATH: "h8300*-hitachi-coff-toolchain-*.*.*-*.*/dist/h8300-hitachi-coff-toolchain"
+  PACKAGE_FILE_DEFAULT: "h8300*-hitachi-coff-toolchain-*.*.*-*.tar.xz"
+  PACKAGE_FILE_ARCH:    "h8300*-hitachi-coff-toolchain-*.*.*-*-*.tar.xz"
   
   # Prevent the Cygwin profile script from doing an automatic `cd ${HOME}`
   CHERE_INVOKING:   1
@@ -100,7 +101,8 @@ jobs:
       with:
         name: "${{ env.CYGPORT_FILE }}-${{ matrix.platform }}_${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}"
         path: |
-          "${{ env.PACKAGE_PATH }}/${{ env.PACKAGE_FILE }}"
+          "${{ env.PACKAGE_PATH }}/${{ env.PACKAGE_FILE_DEFAULT }}"
+          "${{ env.PACKAGE_PATH }}/${{ env.PACKAGE_FILE_ARCH }}"
           !**/*-src.tar.xz
         if-no-files-found: error
         # The artifacts are already compressed, so further compression is superfluous
