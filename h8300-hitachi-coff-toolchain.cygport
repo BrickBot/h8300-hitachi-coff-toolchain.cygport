@@ -4,7 +4,9 @@ PROJECT="GNU-Legacy-Toolchain"
 VERSION_MAJOR=1
 VERSION_MINOR=1
 VERSION_PATCH=2
-VERSION="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
+# Cygport Bug - The following definition works some places but not others:
+#VERSION="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
+VERSION=1.1.2
 RELEASE=1
 
 # Package Metadata
