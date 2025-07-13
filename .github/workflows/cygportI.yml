@@ -1,7 +1,32 @@
-name: Cygport Packager for h8300-hitachi-coff-toolchain
+name: Cygport Packager for ${{ env.PACKAGE_NAME }}
 
 # NOTE: With Cygwin, multi-line values (e.g. run, path) do NOT work
 #   due to end-of-line character issues and differences.
+
+env:
+  PACKAGE_NAME:  h8300-hitachi-coff-toolchain
+  PACKAGE_BUILD_REQUIRES:  autoconf automake m4 make binutils gcc-core gcc-g++ gcc-objc bison flex libtool gawk gettext gettext-devel gettext-debuginfo texinfo  file libisl-devel libncurses-devel dejagnu
+
+  ## ========================================= ##
+  ## NO USER SERVICEABLE PARTS BELOW THIS LINE ##
+  ## ========================================= ##
+  
+  # Cygwin Environment Configuration
+  
+  # Prevent the Cygwin profile script from doing an automatic `cd ${HOME}`
+  CHERE_INVOKING:   1
+  # Ensure PATH contains only Cygwin executables
+  CYGWIN_NOWINPATH: 1
+  # Use native symlinks that Command and PowerShell can understand
+  CYGWIN:           winsymlinks:native
+
+  # Cygwin package search:  https://cygwin.com/packages/
+  # Cygwin package list:    https://cygwin.com/packages/package_list.html
+  # Cygwin-official Action: https://github.com/marketplace/actions/install-cygwin-action
+  # NOTE: The "ruby" dependency is needed because "CYGWIN_NOWINPATH"
+  #   does not appear to fully work, and Cygport will otherwise fail
+  #   as it will find Ruby but it is the GitHub-installed Ruby and not the Cygwin-installed Ruby.
+  CYGWIN_WORKFLOW_REQUIRES: cygport git tree ruby stow
 
 on:
   workflow_dispatch:
@@ -14,31 +39,6 @@ on:
   pull_request:
     # branches: [ master ]
 
-env:
-  # The name of the Cyport file is the same as github.repository
-  CYGPORT_FILE: h8300-hitachi-coff-toolchain.cygport
-  PACKAGE_PATH: h8300*-hitachi-coff-toolchain-*.*.*-*.*/dist/h8300-hitachi-coff-toolchain
-  PACKAGE_FILE_DEFAULT: h8300*-hitachi-coff-toolchain-*.*.*-*[[:digit:]].tar.xz
-  PACKAGE_FILE_ARCH:    h8300*-hitachi-coff-toolchain-*.*.*-*[[:digit:]]-*.tar.xz
-  
-  # Prevent the Cygwin profile script from doing an automatic `cd ${HOME}`
-  CHERE_INVOKING:   1
-  # Ensure PATH contains only Cygwin executables
-  CYGWIN_NOWINPATH: 1
-  # Use native symlinks that Command and PowerShell can understand
-  CYGWIN:           winsymlinks:native
-
-  # Cygwin package search:  https://cygwin.com/packages/
-  # Cygwin package list:    https://cygwin.com/packages/package_list.html
-  # Cygwin-official Action: https://github.com/marketplace/actions/install-cygwin-action
-  # ** NOTE **: On Cygwin, need to create a symlink for libtermcap.a -> libncurses.a
-  #  - https://superuser.com/a/1020342
-  CYGWIN_DEPENDS: cygport
-  CYGWIN_PACKAGING_DEPENDS: cygport tree  git autoconf automake m4 make binutils gcc-core gcc-g++ gcc-objc bison flex libtool gawk gettext gettext-devel gettext-debuginfo texinfo  file libisl-devel libncurses-devel dejagnu  stow  ruby
-  CYGWIN_GCC44_BUILD_DEPENDS: libglib2.0-devel libgmp-devel libmpfr-devel libmpc-devel zip unzip
-  # Cygwin lacks packages for Mono, so the "gcc44" toolchain set is unsupported unless Mono is built and installed manually
-  CYGWIN_GCC44_MISSING_DEPENDS:    mono-runtime libmono-2.0-dev
-
 defaults:
   run:
     shell: bash
@@ -46,11 +46,19 @@ defaults:
 jobs:
   build_toolchain_job:
     name:     Cygport ${{ matrix.platform }} Package Generation
+
+    env:
+      CYGPORT_FILE: ${{ env.PACKAGE_NAME }}.cygport
+      PACKAGE_PATH: ${{ env.PACKAGE_NAME }}-*-*[[:digit:]].${{ matrix.platform }}/dist/${{ env.PACKAGE_NAME }}
+      PACKAGE_FILE_DEFAULT:  ${{ env.PACKAGE_NAME }}-*-*[[:digit:]].tar.xz
+      PACKAGE_FILE_PLATFORM: ${{ env.PACKAGE_NAME }}-*-*[[:digit:]]-${{ matrix.platform }}.tar.xz
+      
     strategy:
       fail-fast:  false
       matrix:     
         os:       [ "windows-latest" ]
         platform: [ "x86_64", "x86" ]
+
     runs-on:      ${{ matrix.os }}
     
     steps:
@@ -71,7 +79,7 @@ jobs:
       uses: cygwin/cygwin-install-action@v5
       with:
         platform: ${{ matrix.platform }}
-        packages: ${{ env.CYGWIN_PACKAGING_DEPENDS }}
+        packages: ${{ env.CYGWIN_WORKFLOW_REQUIRES }} ${{ env.PACKAGE_BUILD_REQUIRES }}
 
       # Check if a version of Ruby is in the PATH
     - name: Post-Cygwin Ruby existence and version check
@@ -93,12 +101,9 @@ jobs:
     - name: Package the build
       run:  cygport $CYGPORT_FILE package
 
-    - name: Resolve the literal value of the package path
-      run:  echo "PACKAGE_PATH=$(realpath --relative-to=. --logical --no-symlinks $PACKAGE_PATH)" >> "$GITHUB_ENV"
-
       # Packages for the "x86" platform have a different filename pattern
     - name: Resolve the literal value of the package filename
-      run:  echo "PACKAGE_FILE=$(if [ '${{ matrix.platform }}' == 'x86' ] ; then echo $PACKAGE_FILE_DEFAULT; else echo h8300*-hitachi-coff-toolchain-*.*.*-*[[:digit:]]-${{ matrix.platform }}.tar.xz; fi)" >> "$GITHUB_ENV"
+      run:  echo "PACKAGE_FILE=$(if [ '${{ matrix.platform }}' == 'x86' ] ; then echo $PACKAGE_FILE_DEFAULT; else echo $PACKAGE_FILE_PLATFORM; fi)" >> "$GITHUB_ENV"
 
       # Packages for the "x86" platform have a different filename pattern
     - name: Resolve the literal value of the package file path
