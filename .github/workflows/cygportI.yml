@@ -1,4 +1,4 @@
-name: Cygport Packager for ${{ env.PACKAGE_NAME }}
+name: Cygport Packager
 
 # NOTE: With Cygwin, multi-line values (e.g. run, path) do NOT work
 #   due to end-of-line character issues and differences.
