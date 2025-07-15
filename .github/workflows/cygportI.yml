@@ -3,6 +3,8 @@ name: Cygport Packager
 # NOTE: With Cygwin, multi-line values (e.g. run, path) do NOT work
 #   due to end-of-line character issues and differences.
 
+# jq -cn --argjson files "$(ls *.cygport | jq --raw-input | jq --slurp --compact-output)" '{file: $files}'
+
 env:
   PACKAGE_NAME:  h8300-hitachi-coff-toolchain
   PACKAGE_BUILD_REQUIRES:  autoconf automake m4 make binutils gcc-core gcc-g++ gcc-objc bison flex libtool gawk gettext gettext-devel gettext-debuginfo texinfo  file libisl-devel libncurses-devel dejagnu
@@ -10,6 +12,8 @@ env:
   ## ========================================= ##
   ## NO USER SERVICEABLE PARTS BELOW THIS LINE ##
   ## ========================================= ##
+  
+  FILE_FILTER:  "*.cygport"
   
   # Cygwin Environment Configuration
   
@@ -26,7 +30,7 @@ env:
   # NOTE: The "ruby" dependency is needed because "CYGWIN_NOWINPATH"
   #   does not appear to fully work, and Cygport will otherwise fail
   #   as it will find Ruby but it is the GitHub-installed Ruby and not the Cygwin-installed Ruby.
-  CYGWIN_WORKFLOW_REQUIRES: cygport git tree ruby stow
+  CYGWIN_WORKFLOW_REQUIRES: cygport jq git tree ruby stow
 
 on:
   workflow_dispatch:
@@ -44,31 +48,45 @@ defaults:
     shell: bash
 
 jobs:
-  build_toolchain_job:
-    name:     Cygport ${{ matrix.platform }} Package Generation
-
-    env:
-      CYGPORT_FILE: ${{ env.PACKAGE_NAME }}.cygport
+  setup:
+    name:     Build Setup
+    outputs:
+      #CYGPORT_FILE: ${{ env.PACKAGE_NAME }}.cygport
+      CYGPORT_FILES: ${{ env.CYGPORT_FILES }}
       PACKAGE_PATH: ${{ env.PACKAGE_NAME }}-*-*[[:digit:]].${{ matrix.platform }}/dist/${{ env.PACKAGE_NAME }}
       PACKAGE_FILE_DEFAULT:  ${{ env.PACKAGE_NAME }}-*-*[[:digit:]].tar.xz
       PACKAGE_FILE_PLATFORM: ${{ env.PACKAGE_NAME }}-*-*[[:digit:]]-${{ matrix.platform }}.tar.xz
-      
+
+    steps:
+    - name: Get latest from version control
+      uses: actions/checkout@v4
+
+      # Check if a version of Ruby is in the PATH
+    - name: Pre-Cygwin Ruby existence and version check
+      run:  echo "CYGPORT_FILES=$(ls $FILE_FILTER | jq --raw-input | jq --slurp --compact-output)"  >>  "$GITHUB_ENV"
+
+  generate_package:
+    name:     Cygport ${{ matrix.platform }} Package Generation
+    needs:    setup
+
+    env:
+      CYGPORT_FILE: ${{ needs.setup.outputs.CYGPORT_FILE }}
+      PACKAGE_PATH: ${{ needs.setup.outputs.PACKAGE_PATH }}
+      PACKAGE_FILE_DEFAULT:  ${{ needs.setup.outputs.PACKAGE_FILE_DEFAULT }}
+      PACKAGE_FILE_PLATFORM: ${{ needs.setup.outputs.PACKAGE_FILE_PLATFORM }}
+
     strategy:
       fail-fast:  false
       matrix:     
         os:       [ "windows-latest" ]
         platform: [ "x86_64", "x86" ]
+        file:     ${{ needs.setup.outputs.CYGPORT_FILES }}
 
     runs-on:      ${{ matrix.os }}
     
     steps:
     - name: Get latest from version control
       uses: actions/checkout@v4
-      with:
-        # git-restore-mtime-bare uses the ref log to find the correct timestamp
-        # for each file. This requires a full git history. The default value (1)
-        # creates a shallow checkout.
-        fetch-depth: 0
 
       # Check if a version of Ruby is in the PATH
     - name: Pre-Cygwin Ruby existence and version check
