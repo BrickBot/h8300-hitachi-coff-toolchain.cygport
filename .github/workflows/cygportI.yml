@@ -57,6 +57,8 @@ jobs:
       PACKAGE_FILE_DEFAULT:  ${{ env.PACKAGE_NAME }}-*-*[[:digit:]].tar.xz
       PACKAGE_FILE_PLATFORM: ${{ env.PACKAGE_NAME }}-*-*[[:digit:]]-${{ matrix.platform }}.tar.xz
 
+    runs-on:      "ubuntu-latest"
+    
     steps:
     - name: Get latest from version control
       uses: actions/checkout@v4
