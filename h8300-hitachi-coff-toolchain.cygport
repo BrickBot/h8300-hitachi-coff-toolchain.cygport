@@ -1,11 +1,6 @@
 # Package Identification
+# Historically: NAME, VERSION, and RELEASE are read-only once set
 NAME="h8300-hitachi-coff-toolchain"
-PROJECT="GNU-Legacy-Toolchain"
-VERSION_MAJOR=1
-VERSION_MINOR=1
-VERSION_PATCH=2
-# Cygport Bug - The following definition works some places but not others:
-#VERSION="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
 VERSION=1.1.2
 RELEASE=1
 
@@ -13,16 +8,27 @@ RELEASE=1
 CATEGORY="Devel"
 SUMMARY="A GNU cross-toolchain supporting COFF for the Hitachi H8/300"
 DESCRIPTION="Includes the following toolchain components for
-h8300-hitachi-coff, but because GNU tools no longer support
-'generic COFF' targets, the included tool versions are older.
-Included tool components and versions include the following:
-GNU Binary Utilities (BinUtils-2.16.1), GNU Compiler Collection
-(GCC-3.4.6), GNU Pascal Compiler (GPC-2.1-20070904), NewLib (1.19.0),
-and GNU Debugger (GDB-5.8).  Supported programming languages
-include the following: Assembly, C, C++, Fortran77, Java (GCJ),
-Objective-C, Pascal (GPC), and TreeLang.  This toolchain can
-also be used with the LEGO MindStorms RCX, as it was built
-around an H8/300 processor."
+h8300-hitachi-coff, but using older tool versions because GNU
+tools no longer support 'generic COFF' targets:
+* GNU Binary Utilities (BinUtils-2.16.1)
+* GNU Compiler Collection (GCC-3.4.6)
+* GNU Pascal Compiler (GPC-2.1-20070904)
+* NewLib (1.19.0)
+* GNU Debugger (GDB-5.8)
+
+Supported programming languages include the following:
+* Assembly
+* C
+* C++
+* Fortran77
+* Java (GCJ)
+* Objective-C
+* Pascal (GPC)
+* TreeLang
+
+This toolchain can also be used with the LEGO MindStorms RCX,
+as that device was built around an H8/300 processor."
+PROJECT="GNU-Legacy-Toolchain"
 HOMEPAGE="https://github.com/BrickBot/${PROJECT}"
 
 # License ID list at https://spdx.org/licenses/
@@ -40,9 +46,8 @@ gettext gettext-devel gettext-debuginfo texinfo
 file libisl-devel libncurses-devel dejagnu"
 
 # Ignore any changes under the source directory made during compilation
-# https://github.com/cygwin/cygport/blob/d4b0f1baf2b999825645aec7e79cb166045a8b26/lib/pkg_pkg.cygpart#L512C13-L512C36
-_CYGPORT_RESTRICT_diff_=1
-DIFF_EXCLUDES="'*'"
+# https://cygwin.github.io/cygport/src_postinst_cygpart.html#RESTRICT
+RESTRICT="diff"
 
 src_compile() {
   # Fix source timestamps
