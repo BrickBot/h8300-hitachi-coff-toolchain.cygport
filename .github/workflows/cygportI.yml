@@ -124,23 +124,23 @@ jobs:
 
       # Determine specific path and filename values
     - name: Determine the platform-appropriate path string
-      run:  echo "MATRIX_PLATFORM_PATH_STRING=$(if "${{ matrix.platform }} = "x86" ; then echo "i686"; else echo "${{ matrix.platform }}"; fi)" >> "$GITHUB_ENV"
+      run:  echo MATRIX_PLATFORM_PATH_STRING="$(if "${{ matrix.platform }}" = "x86" ; then echo "i686"; else echo "${{ matrix.platform }}"; fi)" >> "$GITHUB_ENV"
 
     - name: Determine the platform-appropriate file string
       if:   matrix.platform != 'x86'
-      run:  echo "MATRIX_PLATFORM_FILE_STRING=-${{ matrix.platform }}" >> "$GITHUB_ENV"
+      run:  echo MATRIX_PLATFORM_FILE_STRING="-${{ matrix.platform }}" >> "$GITHUB_ENV"
 
     - name: Define the package files path
-      run:  echo "PACKAGE_FILES_PATH=$NAME-$VERSION-$RELEASE.$MATRIX_PLATFORM_PATH_STRING/dist/$NAME" >> "$GITHUB_ENV"
+      run:  echo PACKAGE_FILES_PATH="$NAME-$VERSION-$RELEASE.$MATRIX_PLATFORM_PATH_STRING/dist/$NAME" >> "$GITHUB_ENV"
 
     - name: Define the name of the source package and hint file
-      run:  echo "PACKAGE_SRC_FILES=$NAME-$VERSION-$RELEASE-src.*" >> "$GITHUB_ENV"
+      run:  echo PACKAGE_SRC_FILES="$NAME-$VERSION-$RELEASE-src.*" >> "$GITHUB_ENV"
 
     - name: Define the name of the binary package and hint file
-      run:  echo "PACKAGE_MAINBIN_FILES=$NAME-$VERSION-$RELEASE$MATRIX_PLATFORM_FILE_STRING.*" >> "$GITHUB_ENV"
+      run:  echo PACKAGE_MAINBIN_FILES="$NAME-$VERSION-$RELEASE$MATRIX_PLATFORM_FILE_STRING.*" >> "$GITHUB_ENV"
 
     - name: Define the name of any multi-binary packages and hint files
-      run:  echo "PACKAGE_MULTIBIN_FILES=*/*-$VERSION-$RELEASE$MATRIX_PLATFORM_FILE_STRING.*" >> "$GITHUB_ENV"
+      run:  echo PACKAGE_MULTIBIN_FILES="*/*-$VERSION-$RELEASE$MATRIX_PLATFORM_FILE_STRING.*" >> "$GITHUB_ENV"
 
 
       # Cygwin action docs – https://github.com/marketplace/actions/install-cygwin-action
