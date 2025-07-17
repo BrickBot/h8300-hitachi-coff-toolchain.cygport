@@ -66,6 +66,7 @@ jobs:
       run:  |
         MATRIX_FILE=$(ls $FILE_FILTER | jq --raw-input | jq --slurp --compact-output)
         JSON_MATRIX="{ $MATRIX_OS, $MATRIX_PLATFORM, \"file\": $MATRIX_FILE }"
+        echo "JSON_MATRIX=$JSON_MATRIX"  >>  "$GITHUB_ENV"
         echo "JSON_MATRIX=$JSON_MATRIX"  >>  "$GITHUB_OUTPUT"
         
     - name: Output the generated JSON Matrix
@@ -87,29 +88,30 @@ jobs:
       uses: actions/checkout@v4
 
       # Map property name/value pairs to environment variables
-    - name: Retrieve properties from file
+    - name: Retrieve NAME property from Cygport file
       run:  echo NAME="$(source "${{ matrix.file }}" && echo $NAME)"  >>  "$GITHUB_ENV"
 
-    - name: Retrieve properties from file
+    - name: Retrieve VERSION property from Cygport file
       run:  echo VERSION="$(source "${{ matrix.file }}" && echo $VERSION)"  >>  "$GITHUB_ENV"
 
-    - name: Retrieve properties from file
+    - name: Retrieve RELEASE property from Cygport file
       run:  echo RELEASE="$(source "${{ matrix.file }}" && echo $RELEASE)"  >>  "$GITHUB_ENV"
 
-    - name: Retrieve properties from file
+    - name: Retrieve BUILD_REQUIRES property from file
       run:  echo BUILD_REQUIRES="$(source "${{ matrix.file }}" && echo $BUILD_REQUIRES)"  >>  "$GITHUB_ENV"
 
-    - name: Check for needed properties in Cygport file
+    - name: Assert that the Cygport file contains all needed properties
       if:   (env.NAME == '') || (env.VERSION == '') || (env.RELEASE == '')
       run:  echo "File \"${{ matrix.file }}\" must include NAME, VERSION, and RELEASE properties" && exit 1
 
     - name: Report found information
       run:  echo "Found Cygport file \"${{ matrix.file }}\" for $NAME-$VERSION-$RELEASE"
 
+
       # Packages for the "x86" platform have a different filename pattern
     - name: Determine the platform-appropriate file string
       if:   matrix.platform != 'x86'
-      run:  echo "PLATFORM_FILE_STRING=${{ matrix.platform }}" >> "$GITHUB_ENV"
+      run:  echo "MATRIX_PLATFORM_FILE_STRING=${{ matrix.platform }}" >> "$GITHUB_ENV"
 
 
       # Cygwin action docs – https://github.com/marketplace/actions/install-cygwin-action
