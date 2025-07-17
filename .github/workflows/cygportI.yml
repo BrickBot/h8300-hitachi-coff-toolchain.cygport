@@ -73,7 +73,7 @@ jobs:
         
 
   generate_package:
-    name:     Cygport ${{ matrix.platform }} Package Generation
+    name:     Packaging ${{ matrix.file }} for ${{ matrix.platform }}
     needs:    compose_matrix
 
     strategy:
@@ -98,6 +98,13 @@ jobs:
 
     - name: Retrieve properties from file
       run:  echo BUILD_REQUIRES="$(source "${{ matrix.file }}" && echo $BUILD_REQUIRES)"  >>  "$GITHUB_ENV"
+
+    - name: Check for needed properties in Cygport file
+      if:   (env.NAME == '') || (env.VERSION == '') || (env.RELEASE == '')
+      run:  echo "File \"${{ matrix.file }}\" must include NAME, VERSION, and RELEASE properties" && exit 1
+
+    - name: Report found information
+      run:  echo "Found Cygport file \"${{ matrix.file }}\" for $NAME-$VERSION-$RELEASE"
 
       # Packages for the "x86" platform have a different filename pattern
     - name: Determine the platform-appropriate file string
