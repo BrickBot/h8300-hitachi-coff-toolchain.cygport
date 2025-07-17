@@ -66,8 +66,10 @@ jobs:
       run:  |
         MATRIX_FILE=$(ls $FILE_FILTER | jq --raw-input | jq --slurp --compact-output)
         JSON_MATRIX="{ os: $MATRIX_OS, platform: $MATRIX_PLATFORM, file: $MATRIX_FILE }"
-        echo "JSON_MATRIX:  $JSON_MATRIX"
         echo "JSON_MATRIX=$JSON_MATRIX"  >>  "$GITHUB_ENV"
+        
+    - name: Output the generated JSON Matrix
+      run:  echo "$JSON_MATRIX" | jq .
         
 
   generate_package:
