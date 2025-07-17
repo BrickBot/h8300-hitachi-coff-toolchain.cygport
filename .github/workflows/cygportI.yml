@@ -13,7 +13,9 @@ env:
   ## NO USER SERVICEABLE PARTS BELOW THIS LINE ##
   ## ========================================= ##
   
-  FILE_FILTER:  "*.cygport"
+  FILE_FILTER:     "*.cygport"
+  MATRIX_OS:       "[ windows-latest ]"
+  MATRIX_PLATFORM: "[ x86_64, x86 ]"
   
   # Cygwin Environment Configuration
   
@@ -48,41 +50,31 @@ defaults:
     shell: bash
 
 jobs:
-  setup:
-    name:     Build Setup
+  compose_matrix:
+    name:     Generate the Job Matrix
     outputs:
-      #CYGPORT_FILE: ${{ env.PACKAGE_NAME }}.cygport
-      CYGPORT_FILES: ${{ env.CYGPORT_FILES }}
-      PACKAGE_PATH: ${{ env.PACKAGE_NAME }}-*-*[[:digit:]].${{ matrix.platform }}/dist/${{ env.PACKAGE_NAME }}
-      PACKAGE_FILE_DEFAULT:  ${{ env.PACKAGE_NAME }}-*-*[[:digit:]].tar.xz
-      PACKAGE_FILE_PLATFORM: ${{ env.PACKAGE_NAME }}-*-*[[:digit:]]-${{ matrix.platform }}.tar.xz
+      JSON_MATRIX: ${{ steps.generate_json_matrix.outputs.JSON_MATRIX }}
 
-    runs-on:      "ubuntu-latest"
+    runs-on:      ubuntu-latest
     
     steps:
     - name: Get latest from version control
       uses: actions/checkout@v4
 
-      # Check if a version of Ruby is in the PATH
-    - name: Pre-Cygwin Ruby existence and version check
-      run:  echo "CYGPORT_FILES=$(ls $FILE_FILTER | jq --raw-input | jq --slurp --compact-output)"  >>  "$GITHUB_ENV"
+    - name: Create the JSON for the Job Matrix
+      id:   generate_json_matrix
+      run:  |
+        echo "MATRIX_FILE=$(ls $FILE_FILTER | jq --raw-input | jq --slurp --compact-output)"  >>  "$GITHUB_ENV"
+        echo "JSON_MATRIX={ os: $MATRIX_OS, platform: $MATRIX_PLATFORM, file: $MATRIX_FILE }"  >>  "$GITHUB_ENV"
+        
 
   generate_package:
     name:     Cygport ${{ matrix.platform }} Package Generation
-    needs:    setup
-
-    env:
-      CYGPORT_FILE: ${{ needs.setup.outputs.CYGPORT_FILE }}
-      PACKAGE_PATH: ${{ needs.setup.outputs.PACKAGE_PATH }}
-      PACKAGE_FILE_DEFAULT:  ${{ needs.setup.outputs.PACKAGE_FILE_DEFAULT }}
-      PACKAGE_FILE_PLATFORM: ${{ needs.setup.outputs.PACKAGE_FILE_PLATFORM }}
+    needs:    compose_matrix
 
     strategy:
       fail-fast:  false
-      matrix:     
-        os:       [ "windows-latest" ]
-        platform: [ "x86_64", "x86" ]
-        file:     ${{ needs.setup.outputs.CYGPORT_FILES }}
+      matrix:     ${{ fromJson(needs.compose_matrix.outputs.JSON_MATRIX) }}
 
     runs-on:      ${{ matrix.os }}
     
@@ -90,40 +82,47 @@ jobs:
     - name: Get latest from version control
       uses: actions/checkout@v4
 
-      # Check if a version of Ruby is in the PATH
-    - name: Pre-Cygwin Ruby existence and version check
-      run:  which ruby  &&  ruby --version
+      # Map property name/value pairs to environment variables
+    - name: Retrieve properties from file
+      run:  echo NAME="$(source "${{ matrix.file }}" && echo $NAME)"  >>  "$GITHUB_ENV"
+
+    - name: Retrieve properties from file
+      run:  echo VERSION="$(source "${{ matrix.file }}" && echo $VERSION)"  >>  "$GITHUB_ENV"
+
+    - name: Retrieve properties from file
+      run:  echo RELEASE="$(source "${{ matrix.file }}" && echo $RELEASE)"  >>  "$GITHUB_ENV"
+
+    - name: Retrieve properties from file
+      run:  echo BUILD_REQUIRES="$(source "${{ matrix.file }}" && echo $BUILD_REQUIRES)"  >>  "$GITHUB_ENV"
+
+      # Packages for the "x86" platform have a different filename pattern
+    - name: Determine the platform-appropriate file string
+      if:   matrix.platform != 'x86'
+      run:  echo "PLATFORM_FILE_STRING=${{ matrix.platform }}" >> "$GITHUB_ENV"
+
 
       # Cygwin action docs – https://github.com/marketplace/actions/install-cygwin-action
     - name: Setup Cygwin Environment
       uses: cygwin/cygwin-install-action@v5
       with:
         platform: ${{ matrix.platform }}
-        packages: ${{ env.CYGWIN_WORKFLOW_REQUIRES }} ${{ env.PACKAGE_BUILD_REQUIRES }}
-
-      # Check if a version of Ruby is in the PATH
-    - name: Post-Cygwin Ruby existence and version check
-      run:  which ruby  &&  ruby --version
+        packages: ${{ env.CYGWIN_WORKFLOW_REQUIRES }} ${{ env.BUILD_REQUIRES }}
 
       # Run the Cygport steps
     - name: Download the source archive
-      run:  cygport $CYGPORT_FILE download
+      run:  cygport "${{ matrix.file }}" download
 
     - name: Prepare the source code
-      run:  cygport $CYGPORT_FILE prep
+      run:  cygport "${{ matrix.file }}" prep
 
     - name: Compile the source code
-      run:  cygport $CYGPORT_FILE compile
+      run:  cygport "${{ matrix.file }}" compile
 
     - name: Install the built code to a DestDir
-      run:  cygport $CYGPORT_FILE install
+      run:  cygport "${{ matrix.file }}" install
 
     - name: Package the build
-      run:  cygport $CYGPORT_FILE package
-
-      # Packages for the "x86" platform have a different filename pattern
-    - name: Resolve the literal value of the package filename
-      run:  echo "PACKAGE_FILE=$(if [ '${{ matrix.platform }}' == 'x86' ] ; then echo $PACKAGE_FILE_DEFAULT; else echo $PACKAGE_FILE_PLATFORM; fi)" >> "$GITHUB_ENV"
+      run:  cygport "${{ matrix.file }}" package
 
       # Packages for the "x86" platform have a different filename pattern
     - name: Resolve the literal value of the package file path
@@ -135,7 +134,7 @@ jobs:
     - name: Archive the host installation snapshot tar file
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.CYGPORT_FILE }}-${{ matrix.platform }}_${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}
+        name: ${{ matrix.file }}-${{ matrix.platform }}_${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}
         path: ${{ env.PACKAGE_FILE_PATH }}
         if-no-files-found: error
         # The artifacts are already compressed, so further compression is superfluous
