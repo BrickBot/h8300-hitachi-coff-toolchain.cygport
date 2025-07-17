@@ -14,8 +14,8 @@ env:
   ## ========================================= ##
   
   FILE_FILTER:     "*.cygport"
-  MATRIX_OS:       "[ windows-latest ]"
-  MATRIX_PLATFORM: "[ x86_64, x86 ]"
+  MATRIX_OS:       '"os": [ "windows-latest" ]'
+  MATRIX_PLATFORM: '"platform": [ "x86_64", "x86" ]'
   
   # Cygwin Environment Configuration
   
@@ -65,11 +65,11 @@ jobs:
       id:   generate_json_matrix
       run:  |
         MATRIX_FILE=$(ls $FILE_FILTER | jq --raw-input | jq --slurp --compact-output)
-        JSON_MATRIX="{ os: $MATRIX_OS, platform: $MATRIX_PLATFORM, file: $MATRIX_FILE }"
+        JSON_MATRIX=\{ $MATRIX_OS, $MATRIX_PLATFORM, \"file\": $MATRIX_FILE \}
         echo "JSON_MATRIX=$JSON_MATRIX"  >>  "$GITHUB_ENV"
         
     - name: Output the generated JSON Matrix
-      run:  echo "$JSON_MATRIX" | jq .
+      run:  echo $JSON_MATRIX | jq --slurp .
         
 
   generate_package:
