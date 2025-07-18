@@ -168,7 +168,7 @@ jobs:
       run:  cygport "${{ matrix.file }}" package
 
     - name: List “dist” directory contents
-      run:  tree --dirsfirst "$PACKAGE_PATH"
+      run:  tree --dirsfirst "$PACKAGE_FILES_PATH"
 
 
       # Archive the generated files as artifacts
