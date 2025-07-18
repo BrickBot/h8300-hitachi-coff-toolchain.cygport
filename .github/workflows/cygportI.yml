@@ -124,7 +124,7 @@ jobs:
 
       # Determine specific path and filename values
     - name: Determine the platform-appropriate path string
-      run:  echo MATRIX_PLATFORM_PATH_STRING="$(if "${{ matrix.platform }}" = "x86" ; then echo "i686"; else echo "${{ matrix.platform }}"; fi)" >> "$GITHUB_ENV"
+      run:  echo MATRIX_PLATFORM_PATH_STRING="$(if [ "${{ matrix.platform }}" = "x86" ] ; then echo "i686"; else echo "${{ matrix.platform }}"; fi)" >> "$GITHUB_ENV"
 
     - name: Determine the platform-appropriate file string
       if:   matrix.platform != 'x86'
