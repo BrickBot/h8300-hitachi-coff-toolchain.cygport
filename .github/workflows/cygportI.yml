@@ -4,8 +4,9 @@ name: Cygport Packager
 #   Creates the packages defined by any Cygport files in the repository root.
 #
 # VERSION:      1.0.0
-# DATE:         July 17, 2025
+# DATE:         July 19, 2025
 # AUTHOR:       Matthew Sheets
+# AUTHOR URL:   https://github.com/mesheets
 #
 # LICENSE:      GPL-3.0
 # LICENSE URL:  https://www.gnu.org/licenses/gpl-3.0.html
@@ -122,8 +123,8 @@ jobs:
     - name: If a multi-package, check if the main package is included
       run:  echo INCLUDES_MAIN_PACKAGE="$(if [ -z "$PKG_NAMES" -o -n "$(grep --only-matching --word-regexp "$NAME" <<< "$PKG_NAMES" )" ] ; then echo "true"; else echo "false"; fi)"  >>  "$GITHUB_ENV"
 
-    - name: Report found information
-      run:  echo -e "Found Cygport file \"${{ matrix.file }}\" for $NAME-$VERSION-$RELEASE"
+    - name: Report properties discovered in Cygport file
+      run:  echo -e "Found Cygport file \"${{ matrix.file }}\" for $NAME-$VERSION-$RELEASE with$(if ! $INCLUDES_MAIN_PACKAGE ; then echo "out"; fi) main package and with$(if [ -z "$PKG_NAMES" ] ; then echo "out"; fi) multi-package configuration."
 
 
       # Determine specific path and filename values
@@ -186,7 +187,7 @@ jobs:
         compression-level: 0
 
     - name: Archive main binary package files
-      if:   env.INCLUDES_MAIN_PACKAGE
+      if:   env.INCLUDES_MAIN_PACKAGE != 'false'
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.file }}-${{ matrix.os }}-${{ matrix.platform }}-mainbin_${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}
