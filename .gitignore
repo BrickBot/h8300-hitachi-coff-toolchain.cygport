@@ -2,5 +2,11 @@
 h8300*-coff-toolchain-*.*.*-*.*/
 
 # Archive files
+*.7z
+*.bz2
+*.rar
+*.tar
 *.tar.gz
+*.tar.xz
 *.tgz
+*.zip
