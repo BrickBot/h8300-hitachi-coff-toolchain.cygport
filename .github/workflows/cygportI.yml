@@ -36,10 +36,14 @@ env:
   # Cygwin package search:  https://cygwin.com/packages/
   # Cygwin package list:    https://cygwin.com/packages/package_list.html
   # Cygwin-official Action: https://github.com/marketplace/actions/install-cygwin-action
-  # NOTE: The "ruby" dependency is needed because "CYGWIN_NOWINPATH"
-  #   does not appear to fully work, and Cygport will otherwise fail
-  #   as it will find Ruby but it is the GitHub-installed Ruby and not the Cygwin-installed Ruby.
-  CYGWIN_WORKFLOW_REQUIRES: cygport jq git tree ruby stow
+  # NOTES:
+  #   1. Avoid installing "git" under Cygwin, as this will interfere with
+  #      GitHub's version.
+  #   2. The "ruby" dependency is needed because "CYGWIN_NOWINPATH" does not
+  #      appear to fully work, and Cygport will otherwise fail as it will find
+  #      Ruby, but it is the GitHub-installed Ruby and not the Cygwin-installed Ruby.
+  #   3. Prior to Cygwin installtion, shell commands run under Git Bash.
+  CYGWIN_WORKFLOW_REQUIRES: cygport jq tree ruby
 
 on:
   workflow_dispatch:
@@ -113,13 +117,13 @@ jobs:
 
     - name: Fail job if Cygport file is missing needed properties
       if:   (env.NAME == '') || (env.VERSION == '') || (env.RELEASE == '')
-      run:  echo "File \"${{ matrix.file }}\" must include NAME, VERSION, and RELEASE properties" && exit 1
+      run:  echo -e "File \"${{ matrix.file }}\" must include NAME, VERSION, and RELEASE properties" && exit 1
 
     - name: If a multi-package, check if the main package is included
       run:  echo INCLUDES_MAIN_PACKAGE="$(if [[ -z "$PKG_NAMES" || "$PKG_NAMES" == *"$NAME"* ]] ; then echo "true"; else echo "false"; fi)"  >>  "$GITHUB_ENV"
 
     - name: Report found information
-      run:  echo "Found Cygport file \"${{ matrix.file }}\" for $NAME-$VERSION-$RELEASE"
+      run:  echo -e "Found Cygport file \"${{ matrix.file }}\" for $NAME-$VERSION-$RELEASE"
 
 
       # Determine specific path and filename values
