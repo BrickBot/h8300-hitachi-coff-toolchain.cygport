@@ -1,0 +1,69 @@
+# Package Identification
+# Historically: NAME, VERSION, and RELEASE are read-only once set
+NAME="h8300-hitachi-coff-toolchain"
+VERSION=1.1.3
+RELEASE=1
+
+# Package Metadata
+CATEGORY="Devel"
+SUMMARY="A GNU cross-toolchain supporting COFF for the Hitachi H8/300"
+DESCRIPTION="Includes the following toolchain components for
+h8300-hitachi-coff, but using older tool versions because GNU
+tools no longer support 'generic COFF' targets:
+* GNU Binary Utilities (BinUtils-2.16.1)
+* GNU Compiler Collection (GCC-3.4.6)
+* GNU Pascal Compiler (GPC-2.1-20070904)
+* NewLib (1.19.0)
+* GNU Debugger (GDB-5.8)
+
+Supported programming languages include the following:
+* Assembly
+* C
+* C++
+* Fortran77
+* Java (GCJ)
+* Objective-C
+* Pascal (GPC)
+* TreeLang
+
+This toolchain can also be used with the LEGO MindStorms RCX,
+as that device was built around an H8/300 processor."
+PROJECT="GNU-Legacy-Toolchain"
+HOMEPAGE="https://github.com/BrickBot/${PROJECT}"
+
+# License ID list at https://spdx.org/licenses/
+LICENSE="GPL-3.0-only"
+
+# File Locations
+SRC_URI="${HOMEPAGE}/archive/refs/tags/v${VERSION}.tar.gz"
+SRC_DIR="${PROJECT}-${VERSION}"
+
+
+# Build Setup
+BUILD_REQUIRES="autoconf automake m4 make binutils
+gcc-core gcc-g++ gcc-objc bison flex libtool gawk
+gettext gettext-devel gettext-debuginfo texinfo
+file libisl-devel libncurses-devel dejagnu"
+
+# Ignore any changes under the source directory made during compilation
+# https://cygwin.github.io/cygport/src_postinst_cygpart.html#RESTRICT
+RESTRICT="diff"
+
+src_compile() {
+  # Fix source timestamps
+  # If there are random, unexpected build errors, this might need to be enabled
+  #"${S}/fix-mtime"
+  
+  # Change working directory to outside the source tree
+  echo "Preparing to compile source for ${NAME}-${VERSION}"
+  cd "${B}"
+  
+  # Run configure with the arguments preset in our script
+  "${S}/sym-combined/rcx-lego-configure" --prefix=/usr ${CYGCONF_ARGS}
+  
+  # Execute the build, noting that parallel builds are unsupported
+  MAKEOPTS="${MAKEOPTS} -j1"
+  cygmake
+}
+
+# src_install() undefined here, as the default can be used
