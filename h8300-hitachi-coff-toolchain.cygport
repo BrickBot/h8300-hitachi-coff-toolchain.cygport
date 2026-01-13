@@ -1,7 +1,7 @@
 # Package Identification
 # Historically: NAME, VERSION, and RELEASE are read-only once set
 NAME="h8300-hitachi-coff-toolchain"
-VERSION=1.1.3
+VERSION=1.1.5
 RELEASE=1
 
 # Package Metadata
